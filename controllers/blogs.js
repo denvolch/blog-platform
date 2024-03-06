@@ -5,7 +5,7 @@ blogsRouter.get('/', (req, res) => {
   Blog
     .find({})
     .then(blogs => {
-      res.json(blogs)
+      res.status(200).json(blogs)
     })
     .catch(err => console.error(err))
 })
