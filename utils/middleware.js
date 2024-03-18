@@ -1,6 +1,4 @@
 const requestLogger = (req, res, next) => {
-
-  console.dir(res)
   console.log('Method:         ', req.method)
   console.log('URI:            ', req.url)
   console.log('status:         ', res.statusCode.toString())
