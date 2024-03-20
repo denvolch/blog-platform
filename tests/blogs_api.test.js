@@ -1,4 +1,4 @@
-const { test, after, beforeEach } = require('node:test')
+const { test, after, beforeEach, describe } = require('node:test')
 const assert = require('node:assert')
 const supertest =require('supertest')
 const mongoose = require('mongoose')
@@ -25,6 +25,8 @@ beforeEach(async () => {
 
   await Promise.all(promArr)
 })
+
+after(() => mongoose.connection.close())
 
 test('blogs are returned as json', async () => {
   await api
@@ -83,7 +85,7 @@ test('if filed \'likes\' not exist then it getting 0', async () => {
   assert.strictEqual(blogs.length, 2)
 })
 
-test.only('missing fileds \'title\' & \'url\' returns code 400 \'Bad Request\'', async () => {
+test('missing fileds \'title\' & \'url\' returns code 400 \'Bad Request\'', async () => {
   const newBlog = {
     title: '',
     author: 'Tester Testering',
@@ -103,4 +105,33 @@ test.only('missing fileds \'title\' & \'url\' returns code 400 \'Bad Request\'',
   assert.strictEqual(blogs.length, 1)
 })
 
-after(() => mongoose.connection.close())
+describe('deletion of blog post', () => {
+  test('successed when \'id\' is valid and returned code 204', async () => {
+    const blogsAtStart = await Blog.find({})
+    const blogToDelete =  blogsAtStart[0]
+
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204)
+
+    const blogsAtEnd = await Blog.find({})
+    assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
+  })
+})
+
+describe.only('updating of blog', () => {
+  test.only('when update title property', async () => {
+    const blogAtStart = await Blog.find({})
+
+    const updateTitle = {
+      title: 'Updated title'
+    }
+
+    await api
+      .put(`/api/blogs/${blogAtStart[0]._id}`)
+      .send(updateTitle)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+      .expect(res => assert.strictEqual(res._body.title, 'Updated title'))
+  })
+})

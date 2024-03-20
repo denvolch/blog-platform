@@ -12,6 +12,15 @@ blogsRouter.get('/', (req, res) => {
     })
 })
 
+blogsRouter.delete('/:id', async (req, res) => {
+  try {
+    await Blog.deleteOne({ _id: req.params.id })
+    res.status(204).end()
+  } catch(err) {
+    res.status(404).send({ error: 'Blog doesn\'t exist or is already deleted'})
+  }
+})
+
 blogsRouter.post('/', (req, res) => {
   if (!req.body.likes || req.body.likes === undefined) {
     req.body.likes = 0
@@ -29,6 +38,14 @@ blogsRouter.post('/', (req, res) => {
       res.status(201).json(result)
     })
     .catch(err => console.error(err))
+})
+
+blogsRouter.put('/:id', async (req, res) => {
+  const updatedBlog = await Blog.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true })
+  res.json(updatedBlog)
 })
 
 module.exports = blogsRouter
