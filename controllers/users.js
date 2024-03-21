@@ -8,16 +8,15 @@ usersRouter.get('/', async (req, res) => {
 })
 
 usersRouter.post('/', async (req, res) => {
-  if (req.body.password.length < 10) {
-    return res
-      .status(401)
-      .send({ error: 'Your password is less then 10 symbols' })
-  }
-
   if (!(req.body.username || req.body.password)) {
     return res
       .status(401)
       .send({ error: 'Fields username or password is missed' })
+  } else if (req.body.password.length < 10
+          || req.body.username.length < 3) {
+    return res
+      .status(401)
+      .send({ error: 'Your password or username is invalid' })
   }
 
   const passwordHash = await bcrypt.hash(req.body.password, 10)
