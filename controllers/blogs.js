@@ -1,9 +1,13 @@
 const blogsRouter = require('express').Router()
+const jwt = require('jsonwebtoken')
+
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 blogsRouter.get('/', (req, res) => {
   Blog
     .find({})
+    .populate('user', { username: 1 })
     .then(blogs => {
       res.status(200).json(blogs)
     })
@@ -21,23 +25,38 @@ blogsRouter.delete('/:id', async (req, res) => {
   }
 })
 
-blogsRouter.post('/', (req, res) => {
+blogsRouter.post('/', async (req, res) => {
+  const auth = req.get('Authorization').replace('Bearer ', '')
+  const verifiedUser = jwt.verify(auth, process.env.SECRET)
+  
+  if (!verifiedUser.id) {
+    return res.status(401).send({ error: 'token invalid' })
+  }
+
   if (!req.body.likes || req.body.likes === undefined) {
     req.body.likes = 0
   }
   if (!req.body.title || !req.body.url) {
-    console.log('TITLE ', req.body.title, 'URL ',req.body.url)
     return res.status(400).send({ error: 'missing field \'Title\' or \'Url\'' })
   }
 
-  const blog = new Blog(req.body)
+  const validUser = await User.findById(verifiedUser.id)
 
-  blog
-    .save()
-    .then(result => {
-      res.status(201).json(result)
-    })
-    .catch(err => console.error(err))
+  const newBlog = {
+    ...req.body,
+    user: validUser._id
+  }
+
+  const blog = new Blog(newBlog)
+
+  const savedBlog = await blog.save()
+
+  console.log('validUser', validUser, '\nsavedBlog', savedBlog )
+
+  validUser.blogs =  validUser.blogs.concat(savedBlog._id)
+  await validUser.save()
+
+  res.status(201).json(savedBlog)
 })
 
 blogsRouter.put('/:id', async (req, res) => {
