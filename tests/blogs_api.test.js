@@ -119,8 +119,8 @@ describe('deletion of blog post', () => {
   })
 })
 
-describe.only('updating of blog', () => {
-  test.only('when update title property', async () => {
+describe('updating of blog', () => {
+  test('when update title property', async () => {
     const blogAtStart = await Blog.find({})
 
     const updateTitle = {

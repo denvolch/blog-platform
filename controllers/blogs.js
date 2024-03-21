@@ -17,7 +17,7 @@ blogsRouter.delete('/:id', async (req, res) => {
     await Blog.deleteOne({ _id: req.params.id })
     res.status(204).end()
   } catch(err) {
-    res.status(404).send({ error: 'Blog doesn\'t exist or is already deleted'})
+    res.status(404).send({ error: 'Blog doesn\'t exist or is already deleted' })
   }
 })
 
