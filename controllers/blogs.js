@@ -17,6 +17,19 @@ blogsRouter.get('/', (req, res) => {
 })
 
 blogsRouter.delete('/:id', async (req, res) => {
+  const verifiedUser = jwt.verify(req.token, process.env.SECRET)
+  
+  if (!verifiedUser.id) {
+    return res.status(401).send({ error: 'token invalid' })
+  }
+
+  const validUser = jwt.decode(req.token)
+  const blogToDelete = await Blog.findById(req.params.id)
+
+  if (blogToDelete.user.toString() !== validUser.id) {
+    return res.status(401).send({ error: 'unauthorised user'})
+  }
+
   try {
     await Blog.deleteOne({ _id: req.params.id })
     res.status(204).end()
@@ -26,8 +39,7 @@ blogsRouter.delete('/:id', async (req, res) => {
 })
 
 blogsRouter.post('/', async (req, res) => {
-  const auth = req.get('Authorization').replace('Bearer ', '')
-  const verifiedUser = jwt.verify(auth, process.env.SECRET)
+  const verifiedUser = jwt.verify(req.token, process.env.SECRET)
   
   if (!verifiedUser.id) {
     return res.status(401).send({ error: 'token invalid' })
@@ -51,8 +63,6 @@ blogsRouter.post('/', async (req, res) => {
 
   const savedBlog = await blog.save()
 
-  console.log('validUser', validUser, '\nsavedBlog', savedBlog )
-
   validUser.blogs =  validUser.blogs.concat(savedBlog._id)
   await validUser.save()
 
@@ -60,6 +70,18 @@ blogsRouter.post('/', async (req, res) => {
 })
 
 blogsRouter.put('/:id', async (req, res) => {
+  const verifiedUser = jwt.verify(req.token, process.env.SECRET)
+  
+  if (!verifiedUser.id) {
+    return res.status(401).send({ error: 'token invalid' })
+  }
+
+  const validUser = jwt.decode(req.token)
+  const blogToDelete = await Blog.findById(req.params.id)
+  
+  if (blogToDelete.user.toString() !== validUser.id) {
+    return res.status(401).send({ error: 'unauthorised user'})
+  }
   const updatedBlog = await Blog.findByIdAndUpdate(
     req.params.id,
     req.body,
