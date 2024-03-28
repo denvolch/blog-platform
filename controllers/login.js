@@ -8,7 +8,9 @@ const jwt = require('jsonwebtoken')
 loginRouter.post('/', async (req, res) => {
   const findUser = await User.findOne({ username: req.body.username })
 
-  if (!findUser) res.status(404).send({ error: 'User not exist' })
+  if (!findUser) {
+    return res.status(404).send({ error: 'User not exist' })
+  }
 
   const resultCompare = await bcrypt.compare(
     req.body.password,
@@ -29,6 +31,8 @@ loginRouter.post('/', async (req, res) => {
       username: findUser.username,
       name: findUser.name
     })
+  } else {
+    return res.status(404).send({ error: 'wrong username or password' })
   }
 })
 
