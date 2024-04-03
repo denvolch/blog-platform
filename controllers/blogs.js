@@ -77,16 +77,19 @@ blogsRouter.put('/:id', async (req, res) => {
   }
 
   const validUser = jwt.decode(req.token)
-  const blogToDelete = await Blog.findById(req.params.id)
+  const blogToUpdate = await Blog.findById(req.params.id)
   
-  if (blogToDelete.user.toString() !== validUser.id) {
+  if (blogToUpdate.user.toString() !== validUser.id) {
     return res.status(401).send({ error: 'unauthorised user'})
   }
+  
   const updatedBlog = await Blog.findByIdAndUpdate(
     req.params.id,
     req.body,
-    { new: true })
-  res.json(updatedBlog)
+    { new: true }
+  )
+  
+  res.status(201).json(updatedBlog)
 })
 
 module.exports = blogsRouter
