@@ -42,7 +42,7 @@ describe('initialization of user', () => {
         username: 'someuser',
         password: 'somepassword'
       }
-  
+
       await api
         .post('/api/login')
         .send(authData)
